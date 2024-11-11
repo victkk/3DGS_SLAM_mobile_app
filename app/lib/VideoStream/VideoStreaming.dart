@@ -8,6 +8,16 @@
 //  *
 //  * Copyright (c) 2024 by vic123, All Rights Reserved.
 //  */
+
+
+/*
+* 顶部的渐变标题栏宛若晨曦中的霞光，从柔和的粉色过渡到清新的蓝色，犹如初升的朝阳映照在海天交接之处。
+中心的视频框纯净如一方静谧的湖泊，安然地位于画面中央，与四周环境和谐共生，彰显出一种沉静而不失生动的美感。
+按钮设计更显灵动，流动的粉蓝渐变仿佛微风拂过湖面，激起一层层涟漪，圆润的边角与精致的阴影交相辉映，仿若远山朦胧中的烟云。
+按钮旁提示文字低调素雅，以浅灰呈现，若隐若现间引导用户进入体验，带来一种身临其境的宁静之感。
+整体色调柔和，既有自然的清新之美，又不失科技的未来感。
+此设计如一首清晨的诗，带领用户从现实进入虚拟之境，让操作不再是冷冰冰的指令，而是一种心灵上的共鸣与沉浸。
+* */
 import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
@@ -98,7 +108,6 @@ class _VideoStreamState extends State<VideoStream> {
       isStartPressed = true;
       isEndPressed = false;
     });
-    // 锁定横屏模式
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.landscapeRight,
       DeviceOrientation.landscapeLeft,
@@ -112,7 +121,6 @@ class _VideoStreamState extends State<VideoStream> {
       isStartPressed = false;
     });
     _socket.disconnect();
-    // 恢复自由旋转模式
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.portraitUp,
       DeviceOrientation.portraitDown,
@@ -148,21 +156,49 @@ class _VideoStreamState extends State<VideoStream> {
 
   @override
   Widget build(BuildContext context) {
-    // 颜色定义
-    final buttonColor = Color(0xFF1E3A5F); // 默认按钮颜色
-    final buttonPressedColor = Colors.blueGrey[100]!.withOpacity(0.7); // 浅色与视频框匹配
-    final buttonShadowColor = Colors.black.withOpacity(0.5);
+    final buttonGradient = LinearGradient(
+      colors: [Color(0xFFF8BBD0), Color(0xFFB3E5FC)],
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+    );
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("3DGS RealTime Rendering"),
-        backgroundColor: Colors.blueGrey[700],
-        centerTitle: true,
+      appBar: PreferredSize(
+        preferredSize: Size.fromHeight(50.0),
+        child: Container(
+          width: double.infinity,
+          decoration: BoxDecoration(
+            gradient: buttonGradient,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.1),
+                blurRadius: 10,
+                offset: Offset(0, 8),
+              ),
+            ],
+          ),
+          child: Center(
+            child: Text(
+              "3DGS RealTime Rendering",
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 20,
+                shadows: [Shadow(color: Colors.black26, offset: Offset(1, 1))],
+              ),
+            ),
+          ),
+        ),
       ),
+      extendBodyBehindAppBar: true,
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [Colors.blueGrey[900]!, Colors.grey[800]!],
+            colors: [
+              Color(0xFFF8BBD0).withOpacity(0.6),
+              Color(0xFFE1BEE7).withOpacity(0.4),
+              Color(0xFFB3E5FC).withOpacity(0.6),
+            ],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),
@@ -170,23 +206,18 @@ class _VideoStreamState extends State<VideoStream> {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            // 视频显示区域
+            const SizedBox(height: 60),
             Expanded(
               child: Container(
                 width: double.infinity,
                 decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [Colors.blueGrey[800]!, Colors.grey[700]!],
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                  ),
+                  color: Colors.white,
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: Colors.blueGrey[600]!.withOpacity(0.4)),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.3),
-                      blurRadius: 16,
-                      offset: Offset(0, 8),
+                      color: Colors.black.withOpacity(0.1),
+                      blurRadius: 20,
+                      offset: Offset(0, 12),
                     ),
                   ],
                 ),
@@ -208,9 +239,8 @@ class _VideoStreamState extends State<VideoStream> {
                               Uint8List.fromList(
                                 base64Decode(snapshot.data.toString()),
                               ),
-                              fit: BoxFit.contain,
+                              fit: BoxFit.cover,
                               gaplessPlayback: true,
-                              excludeFromSemantics: true,
                             ),
                           );
                         }
@@ -229,22 +259,37 @@ class _VideoStreamState extends State<VideoStream> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      ElevatedButton(
-                        onPressed: () => startConnection(context),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: buttonColor,
-                          shadowColor: buttonShadowColor,
-                          elevation: 10,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(30),
-                          ),
-                          padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 48),
+                      Container(
+                        width: 160,
+                        decoration: BoxDecoration(
+                          gradient: buttonGradient,
+                          borderRadius: BorderRadius.circular(30),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.15),
+                              blurRadius: 15,
+                              offset: Offset(0, 10),
+                            ),
+                          ],
                         ),
-                        child: const Text(
-                          "Start",
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 18,
+                        child: ElevatedButton(
+                          onPressed: () => startConnection(context),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.transparent,
+                            shadowColor: Colors.transparent,
+                            elevation: 0,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(30),
+                            ),
+                            padding: const EdgeInsets.symmetric(vertical: 16.0),
+                          ),
+                          child: const Text(
+                            "Start",
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 18,
+                              shadows: [Shadow(color: Colors.black26, offset: Offset(1, 1))],
+                            ),
                           ),
                         ),
                       ),
@@ -252,7 +297,7 @@ class _VideoStreamState extends State<VideoStream> {
                       Text(
                         "Please rotate to landscape for a better experience.",
                         style: TextStyle(
-                          color: Colors.white.withOpacity(0.8),
+                          color: Colors.grey.shade800,
                           fontSize: 14,
                         ),
                         textAlign: TextAlign.center,
@@ -268,20 +313,31 @@ class _VideoStreamState extends State<VideoStream> {
                 Text(
                   "Drag to zoom and pan the video.",
                   style: TextStyle(
-                    color: Colors.white.withOpacity(0.8),
+                    color: Colors.grey.shade800,
                     fontSize: 14,
                   ),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 8),
-                SizedBox(
-                  width: 140,
+                Container(
+                  width: 160,
+                  decoration: BoxDecoration(
+                    gradient: buttonGradient,
+                    borderRadius: BorderRadius.circular(30),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.15),
+                        blurRadius: 15,
+                        offset: Offset(0, 10),
+                      ),
+                    ],
+                  ),
                   child: ElevatedButton(
                     onPressed: _isConnected ? endConnection : null,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: isEndPressed ? buttonPressedColor : buttonColor,
-                      shadowColor: buttonShadowColor,
-                      elevation: isEndPressed ? 5 : 10,
+                      backgroundColor: Colors.transparent,
+                      shadowColor: Colors.transparent,
+                      elevation: 0,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(30),
                       ),
@@ -292,6 +348,7 @@ class _VideoStreamState extends State<VideoStream> {
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: 16,
+                        shadows: [Shadow(color: Colors.black26, offset: Offset(1, 1))],
                       ),
                     ),
                   ),
@@ -304,4 +361,3 @@ class _VideoStreamState extends State<VideoStream> {
     );
   }
 }
-
