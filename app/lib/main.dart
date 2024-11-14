@@ -29,9 +29,9 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
         brightness: Brightness.light, // 选择亮色或暗色主题
-        primaryColor: Color(0xFF0D47A1), // 主色调
-        scaffoldBackgroundColor: Color(0xFFF1F8E9), // Scaffold 背景色
-        appBarTheme: AppBarTheme(
+        primaryColor: const Color(0xFF0D47A1), // 主色调
+        scaffoldBackgroundColor: const Color(0xFFF1F8E9), // Scaffold 背景色
+        appBarTheme: const AppBarTheme(
           color: Color(0xFF1E88E5), // AppBar 颜色
           elevation: 4,
           titleTextStyle: TextStyle(
@@ -44,13 +44,13 @@ class MyApp extends StatelessWidget {
           ),
         ),
         buttonTheme: ButtonThemeData(
-          buttonColor: Color(0xFF0D47A1), // 按钮背景色
+          buttonColor: const Color(0xFF0D47A1), // 按钮背景色
           textTheme: ButtonTextTheme.primary,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(8),
           ),
         ),
-        floatingActionButtonTheme: FloatingActionButtonThemeData(
+        floatingActionButtonTheme: const FloatingActionButtonThemeData(
           backgroundColor: Color(0xFFFFA000), // FAB背景色
           foregroundColor: Colors.white, // FAB图标颜色
         ),
@@ -65,13 +65,13 @@ class MyApp extends StatelessWidget {
         inputDecorationTheme: InputDecorationTheme(
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(8),
-            borderSide: BorderSide(color: Color(0xFF0D47A1)),
+            borderSide: const BorderSide(color: Color(0xFF0D47A1)),
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(8),
-            borderSide: BorderSide(color: Color(0xFF1E88E5)),
+            borderSide: const BorderSide(color: Color(0xFF1E88E5)),
           ),
-          labelStyle: TextStyle(
+          labelStyle: const TextStyle(
             color: Color(0xFF0D47A1),
           ),
         ),

@@ -90,7 +90,7 @@ class _MyHomePageState extends State<MyHomePage> {
               decoration: BoxDecoration(
                 border: Border.all(width: 1.0, color: Colors.black38),
               ),
-              child: SizedBox(
+              child: const SizedBox(
                 height: _snakeRows * _snakeCellSize,
                 width: _snakeColumns * _snakeCellSize,
               ),

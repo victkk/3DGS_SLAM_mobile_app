@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
-import 'dart:async';
 import 'dart:convert';
 
 class Drag extends StatefulWidget {
   final Widget child;
 
   final void Function(dynamic) sendMessage;
-  Drag(this.child, this.sendMessage);
+  const Drag(this.child, this.sendMessage, {super.key});
 
   @override
   DragState createState() => DragState();

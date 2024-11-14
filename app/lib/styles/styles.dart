@@ -124,7 +124,7 @@ import 'package:flutter/material.dart';
 
 class Styles {
   // 背景颜色渐变：深蓝到浅灰，带有金属风格
-  static final backgroundGradient = BoxDecoration(
+  static const backgroundGradient = BoxDecoration(
     gradient: LinearGradient(
       begin: Alignment.topLeft,
       end: Alignment.bottomRight,
@@ -142,19 +142,19 @@ class Styles {
     shape: RoundedRectangleBorder(
       borderRadius: BorderRadius.circular(12),
     ),
-    backgroundColor: Color(0xFF1F1F2E), // 按钮主背景色，接近金属风格
+    backgroundColor: const Color(0xFF1F1F2E), // 按钮主背景色，接近金属风格
     shadowColor: Colors.black.withOpacity(0.4), // 按钮的阴影
     elevation: 8, // 提高立体感
   ).copyWith(
-    backgroundColor: MaterialStateProperty.resolveWith<Color>((states) {
-      return states.contains(MaterialState.pressed)
-          ? Color(0xFF383857) // 按下时的深蓝灰色
-          : Color(0xFF2A2A40); // 默认金属灰蓝色
+    backgroundColor: WidgetStateProperty.resolveWith<Color>((states) {
+      return states.contains(WidgetState.pressed)
+          ? const Color(0xFF383857) // 按下时的深蓝灰色
+          : const Color(0xFF2A2A40); // 默认金属灰蓝色
     }),
   );
 
   // 标题栏样式
-  static final appBarStyle = AppBarTheme(
+  static const appBarStyle = AppBarTheme(
     color: Color(0xFF2E2E3E), // 标题栏深金属灰
     elevation: 4,
     titleTextStyle: TextStyle(
@@ -167,7 +167,7 @@ class Styles {
 
   // 视频框样式：带有金属边框和轻微阴影的3D效果
   static final videoFrameDecoration = BoxDecoration(
-    gradient: LinearGradient(
+    gradient: const LinearGradient(
       colors: [
         Color(0xFF1E1E2F), // 深金属色
         Color(0xFF2E2E4D), // 中灰蓝色
@@ -180,7 +180,7 @@ class Styles {
       BoxShadow(
         color: Colors.black.withOpacity(0.5),
         blurRadius: 8,
-        offset: Offset(0, 4),
+        offset: const Offset(0, 4),
       ),
     ],
   );

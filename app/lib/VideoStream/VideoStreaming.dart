@@ -1,27 +1,18 @@
-// /*
-//  * @Author: vic123 zhangzc_efz@163.com
-//  * @Date: 2024-09-03 16:48:14
-//  * @LastEditors: vic123 zhangzc_efz@163.com
-//  * @LastEditTime: 2024-09-12 19:25:31
-//  * @FilePath: \app\lib\VideoStream\VideoStreaming.dart
-//  * @Description:
-//  *
-//  * Copyright (c) 2024 by vic123, All Rights Reserved.
-//  */
-
-
 /*
-* 顶部的渐变标题栏宛若晨曦中的霞光，从柔和的粉色过渡到清新的蓝色，犹如初升的朝阳映照在海天交接之处。
-中心的视频框纯净如一方静谧的湖泊，安然地位于画面中央，与四周环境和谐共生，彰显出一种沉静而不失生动的美感。
-按钮设计更显灵动，流动的粉蓝渐变仿佛微风拂过湖面，激起一层层涟漪，圆润的边角与精致的阴影交相辉映，仿若远山朦胧中的烟云。
-按钮旁提示文字低调素雅，以浅灰呈现，若隐若现间引导用户进入体验，带来一种身临其境的宁静之感。
-整体色调柔和，既有自然的清新之美，又不失科技的未来感。
-此设计如一首清晨的诗，带领用户从现实进入虚拟之境，让操作不再是冷冰冰的指令，而是一种心灵上的共鸣与沉浸。
-* */
+ * @Author: vic123 zhangzc_efz@163.com
+ * @Date: 2024-09-03 16:48:14
+ * @LastEditors: asandstar zhangzc_efz@163.com
+ * @LastEditTime: 2024-09-12 19:25:31
+ * @FilePath: \app\lib\VideoStream\VideoStreaming.dart
+ * @Description:
+ *
+ * Copyright (c) 2024 by vic123, All Rights Reserved.
+ */
+
+
+
 import 'dart:async';
 import 'dart:convert';
-import 'dart:typed_data';
-
 import 'package:app/VideoStream/websocket.dart';
 import 'package:app/constants/constants.dart';
 import 'package:flutter/material.dart';
@@ -43,14 +34,28 @@ class VideoStream extends StatefulWidget {
 class _VideoStreamState extends State<VideoStream> {
   final WebSocket _socket = WebSocket(Constants.videoWebsocketURL);
   bool _isConnected = false;
-  bool isStartPressed = false;
-  bool isEndPressed = false;
   Timer? picTimer;
   late CameraController controller;
 
   @override
   void initState() {
     _loadCam();
+    _setupSensors();
+    startPictureTimer();
+    super.initState();
+  }
+
+  Future<void> _loadCam() async {
+    _cameras = await availableCameras();
+    controller = CameraController(_cameras[0], ResolutionPreset.medium);
+
+    await controller.initialize();
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
+  void _setupSensors() {
     accelerometerEventStream(samplingPeriod: SensorInterval.gameInterval).listen(
           (AccelerometerEvent event) {
         if (_isConnected) {
@@ -81,32 +86,12 @@ class _VideoStreamState extends State<VideoStream> {
       onError: (error) {},
       cancelOnError: true,
     );
-    startPictureTimer();
-    super.initState();
-  }
-
-  Future<void> _loadCam() async {
-    _cameras = await availableCameras();
-    controller = CameraController(_cameras[0], ResolutionPreset.medium);
-
-    controller.initialize().then((_) {
-      if (!mounted) {
-        return;
-      }
-      setState(() {});
-    }).catchError((Object e) {
-      if (e is CameraException) {
-        print(e.code);
-      }
-    });
   }
 
   void startConnection(BuildContext context) async {
     _socket.connect();
     setState(() {
       _isConnected = true;
-      isStartPressed = true;
-      isEndPressed = false;
     });
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.landscapeRight,
@@ -117,8 +102,6 @@ class _VideoStreamState extends State<VideoStream> {
   void endConnection() {
     setState(() {
       _isConnected = false;
-      isEndPressed = true;
-      isStartPressed = false;
     });
     _socket.disconnect();
     SystemChrome.setPreferredOrientations([
@@ -130,9 +113,7 @@ class _VideoStreamState extends State<VideoStream> {
   }
 
   void startPictureTimer() {
-    if (picTimer != null && picTimer!.isActive) {
-      return;
-    }
+    if (picTimer != null && picTimer!.isActive) return;
     picTimer = Timer.periodic(const Duration(milliseconds: 1000), (Timer timer) {
       if (_isConnected) {
         sendPicture();
@@ -141,14 +122,11 @@ class _VideoStreamState extends State<VideoStream> {
   }
 
   void sendPicture() async {
-    int timestamp1 = DateTime.now().millisecondsSinceEpoch;
     final XFile image = await controller.takePicture();
-    int timestamp2 = DateTime.now().millisecondsSinceEpoch;
     Uint8List imageBytes = await image.readAsBytes();
 
     Map<String, dynamic> message = {
-      'timestamp1': timestamp1,
-      'timestamp2': timestamp2,
+      'timestamp': DateTime.now().millisecondsSinceEpoch,
       'image': base64Encode(imageBytes),
     };
     _socket.sendMessage(jsonEncode(message));
@@ -156,7 +134,8 @@ class _VideoStreamState extends State<VideoStream> {
 
   @override
   Widget build(BuildContext context) {
-    final buttonGradient = LinearGradient(
+    final isLandscape = MediaQuery.of(context).orientation == Orientation.landscape;
+    const buttonGradient = LinearGradient(
       colors: [Color(0xFFF8BBD0), Color(0xFFB3E5FC)],
       begin: Alignment.topLeft,
       end: Alignment.bottomRight,
@@ -164,7 +143,7 @@ class _VideoStreamState extends State<VideoStream> {
 
     return Scaffold(
       appBar: PreferredSize(
-        preferredSize: Size.fromHeight(50.0),
+        preferredSize: Size.fromHeight(isLandscape ? 0.0 : 30.0),
         child: Container(
           width: double.infinity,
           decoration: BoxDecoration(
@@ -173,18 +152,21 @@ class _VideoStreamState extends State<VideoStream> {
               BoxShadow(
                 color: Colors.black.withOpacity(0.1),
                 blurRadius: 10,
-                offset: Offset(0, 8),
+                offset: const Offset(0, 8),
               ),
             ],
           ),
-          child: Center(
-            child: Text(
-              "3DGS RealTime Rendering",
-              style: TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-                fontSize: 20,
-                shadows: [Shadow(color: Colors.black26, offset: Offset(1, 1))],
+          child: Padding(
+            padding: EdgeInsets.only(top: isLandscape ? 0.0 : 35.0),
+            child: const Center(
+              child: Text(
+                "3DGS RealTime Rendering",
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 20,
+                  shadows: [Shadow(color: Colors.black26, offset: Offset(1, 1))],
+                ),
               ),
             ),
           ),
@@ -195,72 +177,117 @@ class _VideoStreamState extends State<VideoStream> {
         decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: [
-              Color(0xFFF8BBD0).withOpacity(0.6),
-              Color(0xFFE1BEE7).withOpacity(0.4),
-              Color(0xFFB3E5FC).withOpacity(0.6),
+              const Color(0xFFF8BBD0).withOpacity(0.6),
+              const Color(0xFFE1BEE7).withOpacity(0.4),
+              const Color(0xFFB3E5FC).withOpacity(0.6),
             ],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),
         ),
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(10.0),
         child: Column(
           children: [
-            const SizedBox(height: 60),
+            SizedBox(height: isLandscape ? 35.0 : 65.0),
             Expanded(
               child: Container(
-                width: double.infinity,
+                width: isLandscape ? MediaQuery.of(context).size.width : double.infinity,
+                height: isLandscape ? MediaQuery.of(context).size.height : null,
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(8),
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black.withOpacity(0.1),
                       blurRadius: 20,
-                      offset: Offset(0, 12),
+                      offset: const Offset(0, 12),
                     ),
                   ],
                 ),
                 child: _isConnected
-                    ? Center(
-                  child: Drag(
-                    StreamBuilder(
-                      stream: _socket.stream,
-                      builder: (context, snapshot) {
-                        if (snapshot.connectionState == ConnectionState.waiting) {
-                          return const Center(
-                            child: CircularProgressIndicator(),
-                          );
-                        }
-                        if (snapshot.connectionState == ConnectionState.active &&
-                            snapshot.hasData) {
-                          return Center(
-                            child: Image.memory(
-                              Uint8List.fromList(
-                                base64Decode(snapshot.data.toString()),
+                    ? Stack(
+                  children: [
+                    Center(
+                      child: Drag(
+                        StreamBuilder(
+                          stream: _socket.stream,
+                          builder: (context, snapshot) {
+                            if (snapshot.connectionState == ConnectionState.waiting) {
+                              return const Center(
+                                child: CircularProgressIndicator(),
+                              );
+                            }
+                            if (snapshot.connectionState == ConnectionState.active &&
+                                snapshot.hasData) {
+                              return Center(
+                                child: Image.memory(
+                                  Uint8List.fromList(
+                                    base64Decode(snapshot.data.toString()),
+                                  ),
+                                  fit: BoxFit.contain,
+                                  gaplessPlayback: true,
+                                ),
+                              );
+                            }
+                            return const Center(
+                              child: Text(
+                                "Connection Closed!",
+                                style: Styles.statusTextStyle,
                               ),
-                              fit: BoxFit.cover,
-                              gaplessPlayback: true,
-                            ),
-                          );
-                        }
-                        return Center(
-                          child: Text(
-                            "Connection Closed!",
-                            style: Styles.statusTextStyle,
-                          ),
-                        );
-                      },
+                            );
+                          },
+                        ),
+                        _socket.sendMessage,
+                      ),
                     ),
-                    _socket.sendMessage,
-                  ),
+                    if (isLandscape) // 横屏且连接时显示 End 按钮
+                      Positioned(
+                        bottom: 10,
+                        right: 10,
+                        child: Container(
+                          width: 60,
+                          height: 30,
+                          decoration: BoxDecoration(
+                            gradient: buttonGradient,
+                            borderRadius: BorderRadius.circular(15),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.15),
+                                blurRadius: 10,
+                                offset: const Offset(0, 6),
+                              ),
+                            ],
+                          ),
+                          child: ElevatedButton(
+                            onPressed: endConnection,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.transparent,
+                              shadowColor: Colors.transparent,
+                              elevation: 0,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(15),
+                              ),
+                              padding: EdgeInsets.zero,
+                            ),
+                            child: const Text(
+                              "End",
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 12,
+                                shadows: [Shadow(color: Colors.black26, offset: Offset(1, 1))],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
                 )
                     : Center(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Container(
-                        width: 160,
+                        width: isLandscape ? 100 : 160,
                         decoration: BoxDecoration(
                           gradient: buttonGradient,
                           borderRadius: BorderRadius.circular(30),
@@ -268,7 +295,7 @@ class _VideoStreamState extends State<VideoStream> {
                             BoxShadow(
                               color: Colors.black.withOpacity(0.15),
                               blurRadius: 15,
-                              offset: Offset(0, 10),
+                              offset: const Offset(0, 10),
                             ),
                           ],
                         ),
@@ -283,9 +310,9 @@ class _VideoStreamState extends State<VideoStream> {
                             ),
                             padding: const EdgeInsets.symmetric(vertical: 16.0),
                           ),
-                          child: const Text(
-                            "Start",
-                            style: TextStyle(
+                          child: Text(
+                            isLandscape ? "Start" : "Landscape",
+                            style: const TextStyle(
                               color: Colors.white,
                               fontSize: 18,
                               shadows: [Shadow(color: Colors.black26, offset: Offset(1, 1))],
@@ -295,65 +322,18 @@ class _VideoStreamState extends State<VideoStream> {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        "Please rotate to landscape for a better experience.",
+                        isLandscape ? "Please rotate to portrait." : "See a larger view",
                         style: TextStyle(
                           color: Colors.grey.shade800,
                           fontSize: 14,
                         ),
                         textAlign: TextAlign.center,
                       ),
+
                     ],
                   ),
                 ),
               ),
-            ),
-            const SizedBox(height: 20.0),
-            Column(
-              children: [
-                Text(
-                  "Drag to zoom and pan the video.",
-                  style: TextStyle(
-                    color: Colors.grey.shade800,
-                    fontSize: 14,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 8),
-                Container(
-                  width: 160,
-                  decoration: BoxDecoration(
-                    gradient: buttonGradient,
-                    borderRadius: BorderRadius.circular(30),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.15),
-                        blurRadius: 15,
-                        offset: Offset(0, 10),
-                      ),
-                    ],
-                  ),
-                  child: ElevatedButton(
-                    onPressed: _isConnected ? endConnection : null,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.transparent,
-                      shadowColor: Colors.transparent,
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(30),
-                      ),
-                      padding: const EdgeInsets.symmetric(vertical: 16.0),
-                    ),
-                    child: const Text(
-                      "End",
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                        shadows: [Shadow(color: Colors.black26, offset: Offset(1, 1))],
-                      ),
-                    ),
-                  ),
-                ),
-              ],
             ),
           ],
         ),
@@ -361,3 +341,4 @@ class _VideoStreamState extends State<VideoStream> {
     );
   }
 }
+

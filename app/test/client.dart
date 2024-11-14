@@ -9,7 +9,6 @@
  * Copyright (c) 2024 by vic123, All Rights Reserved. 
  */
 import 'package:web_socket_channel/io.dart';
-import 'package:web_socket_channel/status.dart' as status;
 
 main() async {
   var channel = IOWebSocketChannel.connect(Uri.parse('ws://192.168.2.38:5000'));
