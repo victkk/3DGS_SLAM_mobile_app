@@ -2,14 +2,12 @@
  * @Author: vic123 zhangzc_efz@163.com
  * @Date: 2024-09-03 16:48:14
  * @LastEditors: asandstar zhangzc_efz@163.com
- * @LastEditTime: 2024-09-12 19:25:31
+ * @LastEditTime: 2024-12-30 20:30:00
  * @FilePath: \app\lib\VideoStream\VideoStreaming.dart
- * @Description:
+ * @Description: 3DGS RealTime Rendering Application
  *
  * Copyright (c) 2024 by vic123, All Rights Reserved.
  */
-
-
 
 import 'dart:async';
 import 'dart:convert';
@@ -39,10 +37,15 @@ class _VideoStreamState extends State<VideoStream> {
 
   @override
   void initState() {
+    super.initState();
     _loadCam();
     _setupSensors();
     startPictureTimer();
-    super.initState();
+
+    // 初始化时监听屏幕方向变化并动态调整状态栏模式
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+          SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+    });
   }
 
   Future<void> _loadCam() async {
@@ -71,6 +74,7 @@ class _VideoStreamState extends State<VideoStream> {
       onError: (error) {},
       cancelOnError: true,
     );
+
     gyroscopeEventStream(samplingPeriod: SensorInterval.gameInterval).listen(
           (GyroscopeEvent event) {
         if (_isConnected) {
@@ -107,8 +111,6 @@ class _VideoStreamState extends State<VideoStream> {
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.portraitUp,
       DeviceOrientation.portraitDown,
-      DeviceOrientation.landscapeRight,
-      DeviceOrientation.landscapeLeft,
     ]);
   }
 
@@ -136,50 +138,54 @@ class _VideoStreamState extends State<VideoStream> {
   Widget build(BuildContext context) {
     final isLandscape = MediaQuery.of(context).orientation == Orientation.landscape;
     const buttonGradient = LinearGradient(
-      colors: [Color(0xFFF8BBD0), Color(0xFFB3E5FC)],
-      begin: Alignment.topLeft,
-      end: Alignment.bottomRight,
+      colors: [Color(0xFF0B184A), Color(0xFF17339F)],
+      begin: Alignment.topCenter,
+      end: Alignment.bottomCenter,
     );
 
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+    });
+
     return Scaffold(
-      appBar: PreferredSize(
-        preferredSize: Size.fromHeight(isLandscape ? 0.0 : 30.0),
+      appBar: isLandscape
+          ? null // 横屏模式下隐藏标题栏
+          : PreferredSize(
+        preferredSize: const Size.fromHeight(50.0),
+    child: Padding(
+    padding: const EdgeInsets.only(top: 0), // 增加顶部空白
         child: Container(
-          width: double.infinity,
           decoration: BoxDecoration(
             gradient: buttonGradient,
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.1),
+                color: Colors.black.withOpacity(0.2),
                 blurRadius: 10,
                 offset: const Offset(0, 8),
               ),
             ],
           ),
-          child: Padding(
-            padding: EdgeInsets.only(top: isLandscape ? 0.0 : 35.0),
-            child: const Center(
-              child: Text(
-                "3DGS RealTime Rendering",
-                style: TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 20,
-                  shadows: [Shadow(color: Colors.black26, offset: Offset(1, 1))],
+          child: const Center(
+            child: Text(
+              "3DGS RealTime Rendering",
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 24,
+                shadows: [Shadow(color: Colors.black26, offset: Offset(1, 1))],
                 ),
               ),
             ),
           ),
         ),
       ),
-      extendBodyBehindAppBar: true,
+      extendBodyBehindAppBar: false,
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: [
-              const Color(0xFFF8BBD0).withOpacity(0.6),
-              const Color(0xFFE1BEE7).withOpacity(0.4),
-              const Color(0xFFB3E5FC).withOpacity(0.6),
+              const Color(0xFF5C91FA).withOpacity(1),
+              const Color(0xFF5C91FA).withOpacity(0.5),
             ],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
@@ -187,14 +193,14 @@ class _VideoStreamState extends State<VideoStream> {
         ),
         padding: const EdgeInsets.all(10.0),
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween, // 添加上下间距
           children: [
-            SizedBox(height: isLandscape ? 35.0 : 65.0),
+            if (!isLandscape) const SizedBox(height: 0), // 调整顶部空隙
             Expanded(
               child: Container(
-                width: isLandscape ? MediaQuery.of(context).size.width : double.infinity,
-                height: isLandscape ? MediaQuery.of(context).size.height : null,
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: Colors.black,
+                  // color: Colors.black45,
                   borderRadius: BorderRadius.circular(8),
                   boxShadow: [
                     BoxShadow(
@@ -240,13 +246,15 @@ class _VideoStreamState extends State<VideoStream> {
                         _socket.sendMessage,
                       ),
                     ),
-                    if (isLandscape) // 横屏且连接时显示 End 按钮
+                    if (isLandscape)
+
+
                       Positioned(
                         bottom: 10,
-                        right: 10,
+                        right: MediaQuery.of(context).size.width * 0.05,
                         child: Container(
-                          width: 60,
-                          height: 30,
+                          width: 80,
+                          height: 40,
                           decoration: BoxDecoration(
                             gradient: buttonGradient,
                             borderRadius: BorderRadius.circular(15),
@@ -273,7 +281,7 @@ class _VideoStreamState extends State<VideoStream> {
                               "End",
                               style: TextStyle(
                                 color: Colors.white,
-                                fontSize: 12,
+                                fontSize: 14,
                                 shadows: [Shadow(color: Colors.black26, offset: Offset(1, 1))],
                               ),
                             ),
@@ -282,12 +290,56 @@ class _VideoStreamState extends State<VideoStream> {
                       ),
                   ],
                 )
-                    : Center(
+                :Center(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
+                      // 添加 VINGS-MONO 的标志
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 16.0),
+                        child: Column(
+                          children: [
+                            Image.asset(
+                              'assets/images/icon.png', // VIN 图标路径
+                              height: 130,
+                            ),
+                            const SizedBox(height: 8),
+                            // const Text(
+                            //   "VINGS-MONO",
+                            //   style: TextStyle(
+                            //     fontSize: 28,
+                            //     fontWeight: FontWeight.bold,
+                            //     color: Colors.white,
+                            //   ),
+                            // ),
+                          ],
+                        ),
+                      ),
+                      // 添加说明文字
+                      const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 16.0),
+                        child: Text(
+                          "Visual-Inertial\n Gaussian Splatting SLAM\nin Large Scenes",
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 28,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                      // 添加学校/实验室的组合图标
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 16.0),
+                        child: Image.asset(
+                          'assets/images/3.png', // 三个图标的组合图路径
+                          height: 80, // 根据需要调整大小
+                        ),
+                      ),
+                      // 添加按钮和说明文字
                       Container(
-                        width: isLandscape ? 100 : 160,
+                        width: 180,
+                        height: 50,
                         decoration: BoxDecoration(
                           gradient: buttonGradient,
                           borderRadius: BorderRadius.circular(30),
@@ -308,31 +360,32 @@ class _VideoStreamState extends State<VideoStream> {
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(30),
                             ),
-                            padding: const EdgeInsets.symmetric(vertical: 16.0),
                           ),
-                          child: Text(
-                            isLandscape ? "Start" : "Landscape",
-                            style: const TextStyle(
+                          child: const Text(
+                            "Landscape",
+                            style: TextStyle(
                               color: Colors.white,
                               fontSize: 18,
-                              shadows: [Shadow(color: Colors.black26, offset: Offset(1, 1))],
                             ),
                           ),
                         ),
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        isLandscape ? "Please rotate to portrait." : "See a larger view",
+                        "Tap to view REALTIME updates",
                         style: TextStyle(
-                          color: Colors.grey.shade800,
+                          color: Colors.white,
                           fontSize: 14,
+                          fontWeight: FontWeight.bold, // Bold text for emphasis
                         ),
                         textAlign: TextAlign.center,
                       ),
-
                     ],
                   ),
                 ),
+
+
+
               ),
             ),
           ],
@@ -341,4 +394,3 @@ class _VideoStreamState extends State<VideoStream> {
     );
   }
 }
-
